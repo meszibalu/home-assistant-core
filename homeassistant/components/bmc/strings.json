@@ -1,0 +1,128 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "BMC - Platform",
+        "data": {
+          "name": "[%key:common::config_flow::data::name%]",
+          "platform": "Platform"
+        }
+      },
+      "binary_sensor": {
+        "title": "BMC - Binary sensor",
+        "data": {
+          "address": "Address",
+          "input": "Input pin number",
+          "device_class": "Device class",
+          "invert": "Invert"
+        }
+      },
+      "cover": {
+        "title": "BMC - Cover",
+        "data": {
+          "device_class": "Device class",
+          "output_type": "Output type"
+        }
+      },
+      "cover_output1": {
+        "title": "BMC - Cover",
+        "data": {
+          "address": "Address",
+          "output": "Output pin number",
+          "timeout": "Opening time",
+          "timeout2": "Closing time",
+          "invert": "Invert"
+        }
+      },
+      "cover_output2": {
+        "title": "BMC - Cover",
+        "data": {
+          "address": "Opening address",
+          "output": "Opening output pin number",
+          "timeout": "Opening time",
+          "invert": "Opening invert",
+          "address2": "Closing address",
+          "output2": "Closing output pin number",
+          "timeout2": "Closing time",
+          "invert2": "Closing invert"
+        }
+      },
+      "event": {
+        "title": "BMC - Event",
+        "data": {
+          "address": "Address",
+          "input": "Input pin number",
+          "device_class": "Device class",
+          "invert": "Invert"
+        }
+      },
+      "light": {
+        "title": "BMC - Light",
+        "data": {
+          "address": "Address",
+          "output": "Output pin number",
+          "pwm": "PWM",
+          "invert": "Invert"
+        }
+      },
+      "sensor": {
+        "title": "BMC - Sensor",
+        "data": {
+          "address": "Address",
+          "port": "1W port number"
+        }
+      },
+      "siren": {
+        "title": "BMC - Siren",
+        "data": {
+          "address": "Address",
+          "output": "Output pin number",
+          "pwm": "Volume PWM",
+          "invert": "Invert"
+        }
+      },
+      "switch": {
+        "title": "BMC - Switch",
+        "data": {
+          "address": "Address",
+          "output": "Output pin number",
+          "invert": "Invert"
+        }
+      },
+      "valve": {
+        "title": "BMC - Valve",
+        "data": {
+          "device_class": "Device class",
+          "output_type": "Output type"
+        }
+      },
+      "valve_output1": {
+        "title": "BMC - Valve",
+        "data": {
+          "address": "Address",
+          "output": "Output pin number",
+          "timeout": "Opening time",
+          "timeout2": "Closing time",
+          "invert": "Invert"
+        }
+      },
+      "valve_output2": {
+        "title": "BMC - Valve",
+        "data": {
+          "address": "Opening address",
+          "output": "Opening output pin number",
+          "timeout": "Opening time",
+          "invert": "Opening invert",
+          "address2": "Closing address",
+          "output2": "Closing output pin number",
+          "timeout2": "Closing time",
+          "invert2": "Closing invert"
+        }
+      }
+    },
+    "error": {
+    },
+    "abort": {
+    }
+  }
+}

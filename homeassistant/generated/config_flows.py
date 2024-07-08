@@ -81,6 +81,7 @@ FLOWS = {
         "blue_current",
         "bluemaestro",
         "bluetooth",
+        "bmc",
         "bmw_connected_drive",
         "bond",
         "bosch_shc",
