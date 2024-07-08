@@ -740,6 +740,12 @@
       "config_flow": false,
       "iot_class": "local_polling"
     },
+    "bmh": {
+      "name": "Bali Művek Home Controller",
+      "integration_type": "hub",
+      "config_flow": true,
+      "iot_class": "local_push"
+    },
     "bmw_connected_drive": {
       "name": "BMW Connected Drive",
       "integration_type": "hub",

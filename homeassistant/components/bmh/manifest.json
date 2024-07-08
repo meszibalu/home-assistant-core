@@ -1,0 +1,14 @@
+{
+  "domain": "bmh",
+  "name": "Bali M\u0171vek Home Controller",
+  "codeowners": ["@meszibalu"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://www.home-assistant.io/integrations/bmh",
+  "homekit": {},
+  "iot_class": "local_push",
+  "loggers": ["bmh"],
+  "requirements": ["bmh==0.1"],
+  "ssdp": [],
+  "zeroconf": []
+}
