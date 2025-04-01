@@ -9,6 +9,7 @@
 *.zip binary
 *.mp3 binary
 *.pcm binary
+*.whl binary
 
 Dockerfile.dev linguist-language=Dockerfile
 
