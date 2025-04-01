@@ -144,7 +144,7 @@ class BmhValve(ValveEntity):
     def current_valve_position(self) -> int:
         """Return the current position of the valve."""
 
-        return int(self._two_way.position)
+        return round(self._two_way.position)
 
     @property
     def is_opening(self) -> bool | None:

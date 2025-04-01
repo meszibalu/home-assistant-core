@@ -140,7 +140,7 @@ class BmhCover(CoverEntity):
     def current_cover_position(self) -> int:
         """Return the current position of the cover."""
 
-        return int(self._two_way.position)
+        return round(self._two_way.position)
 
     @property
     def is_opening(self) -> bool | None:
