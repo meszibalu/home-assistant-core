@@ -19,6 +19,9 @@ docker build --platform=linux/arm64 \
   --build-arg BUILD_ARCH=aarch64 \
   .
 
+echo "Pushing image and tagging git"
+read -p "Press ENTER to continue"
+
 docker push ghcr.io/meszibalu/raspberrypi4-64-homeassistant:$VERSION
 docker push ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable
 
