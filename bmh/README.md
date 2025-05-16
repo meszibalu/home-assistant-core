@@ -1,3 +1,4 @@
+
 # Bali Művek Home Controller
 
 ## Running docker image
@@ -13,6 +14,17 @@ docker run --privileged -d --restart always \
   --network=host \
   ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable
 ```
+
+## Upgrade docker image
+
+Stop and remove previous BMH containers. The previous container must be removed, because it was started with `--restart always` flag previously.
+
+```bash
+docker stop $(docker ps -q --filter ancestor=ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable)
+docker rm $(docker ps -aq --filter ancestor=ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable)
+```
+
+Start BMH docker image.
 
 ## Building docker image
 
