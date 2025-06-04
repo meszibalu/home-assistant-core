@@ -381,8 +381,12 @@ class BmhHub:
                 address_string = f"{Strings.get_address(device.id)} ({device.version})"
                 version_mismatch_devices.append(address_string)
 
-            # clearing reset interrupt
+            # clear reset interrupt
             device.get_reset()
+
+            # clear backup mode interrupt
+            if isinstance(device, bmh.DeviceIo):
+                device.is_backup_mode()
 
         if len(version_mismatch_devices) > 0:
             devices_string = ",\n".join(version_mismatch_devices)
