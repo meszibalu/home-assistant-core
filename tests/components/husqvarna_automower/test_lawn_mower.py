@@ -42,6 +42,11 @@ from tests.common import MockConfigEntry, async_fire_time_changed
             MowerStates.IN_OPERATION,
             LawnMowerActivity.DOCKED,
         ),
+        (
+            MowerActivities.GOING_HOME,
+            MowerStates.RESTRICTED,
+            LawnMowerActivity.RETURNING,
+        ),
     ],
 )
 async def test_lawn_mower_states(
@@ -95,9 +100,7 @@ async def test_lawn_mower_commands(
     mocked_method = getattr(mock_automower_client.commands, aioautomower_command)
     mocked_method.assert_called_once_with(TEST_MOWER_ID)
 
-    getattr(
-        mock_automower_client.commands, aioautomower_command
-    ).side_effect = ApiError("Test error")
+    mocked_method.side_effect = ApiError("Test error")
     with pytest.raises(
         HomeAssistantError,
         match="Failed to send command: Test error",
@@ -144,8 +147,7 @@ async def test_lawn_mower_service_commands(
 ) -> None:
     """Test lawn_mower commands."""
     await setup_integration(hass, mock_config_entry)
-    mocked_method = AsyncMock()
-    setattr(mock_automower_client.commands, aioautomower_command, mocked_method)
+    mocked_method = getattr(mock_automower_client.commands, aioautomower_command)
     await hass.services.async_call(
         domain=DOMAIN,
         service=service,
@@ -155,9 +157,7 @@ async def test_lawn_mower_service_commands(
     )
     mocked_method.assert_called_once_with(TEST_MOWER_ID, extra_data)
 
-    getattr(
-        mock_automower_client.commands, aioautomower_command
-    ).side_effect = ApiError("Test error")
+    mocked_method.side_effect = ApiError("Test error")
     with pytest.raises(
         HomeAssistantError,
         match="Failed to send command: Test error",
@@ -198,8 +198,7 @@ async def test_lawn_mower_override_work_area_command(
 ) -> None:
     """Test lawn_mower work area override commands."""
     await setup_integration(hass, mock_config_entry)
-    mocked_method = AsyncMock()
-    setattr(mock_automower_client.commands, aioautomower_command, mocked_method)
+    mocked_method = getattr(mock_automower_client.commands, aioautomower_command)
     await hass.services.async_call(
         domain=DOMAIN,
         service=service,
