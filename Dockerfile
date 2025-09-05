@@ -29,7 +29,7 @@ RUN \
     && go2rtc --version
 
 # Install uv
-RUN pip3 install uv==0.7.1
+RUN pip3 install uv==0.8.9
 
 COPY bmh/liblgpio.so.1 /usr/lib
 COPY bmh/*.whl /tmp/bmh/
