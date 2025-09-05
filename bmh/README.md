@@ -9,7 +9,7 @@ BMH can run as a docker container with the following command:
 docker pull ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable
 docker run --privileged -d --restart always \
   -e TZ=Europe/Budapest \
-  -v /home/pi/config:/config \
+  -v /opt/homeassistant:/config \
   -v /run/dbus:/run/dbus:ro \
   --network=host \
   ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable
@@ -22,6 +22,8 @@ Stop and remove previous BMH containers. The previous container must be removed,
 ```bash
 docker stop $(docker ps -q --filter ancestor=ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable)
 docker rm $(docker ps -aq --filter ancestor=ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable)
+# remove images otherwise we will run out of space quickly
+docker rmi $(docker images -aq)
 ```
 
 Start BMH docker image.
