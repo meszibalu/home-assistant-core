@@ -38,6 +38,7 @@ PACKAGE_CHECK_VERSION_RANGE = {
     "pillow": "SemVer",
     "pydantic": "SemVer",
     "pyjwt": "SemVer",
+    "pymodbus": "Custom",
     "pytz": "CalVer",
     "requests": "SemVer",
     "typing_extensions": "SemVer",
@@ -64,6 +65,14 @@ PACKAGE_CHECK_VERSION_RANGE_EXCEPTIONS: dict[str, dict[str, set[str]]] = {
     "noaa_tides": {
         # https://github.com/GClunies/noaa_coops/pull/69
         "noaa-coops": {"pandas"}
+    },
+    "smarty": {
+        # Current has an upper bound on major >=3.11.0,<4.0.0
+        "pysmarty2": {"pymodbus"}
+    },
+    "stiebel_eltron": {
+        # Current has an upper bound on major >=3.10.0,<4.0.0
+        "pystiebeleltron": {"pymodbus"}
     },
 }
 
@@ -228,11 +237,6 @@ FORBIDDEN_PACKAGE_EXCEPTIONS: dict[str, dict[str, set[str]]] = {
         # pyopnsense > pbr > setuptools
         "pbr": {"setuptools"}
     },
-    "opower": {
-        # https://github.com/arrow-py/arrow/issues/1169 (fixed not yet released)
-        # opower > arrow > types-python-dateutil
-        "arrow": {"types-python-dateutil"}
-    },
     "pvpc_hourly_pricing": {"aiopvpc": {"async-timeout"}},
     "remote_rpi_gpio": {
         # https://github.com/waveform80/colorzero/issues/9
@@ -247,7 +251,6 @@ FORBIDDEN_PACKAGE_EXCEPTIONS: dict[str, dict[str, set[str]]] = {
     "sense": {"sense-energy": {"async-timeout"}},
     "slimproto": {"aioslimproto": {"async-timeout"}},
     "songpal": {"async-upnp-client": {"async-timeout"}},
-    "squeezebox": {"pysqueezebox": {"async-timeout"}},
     "ssdp": {"async-upnp-client": {"async-timeout"}},
     "surepetcare": {"surepy": {"async-timeout"}},
     "travisci": {
@@ -314,8 +317,6 @@ FORBIDDEN_PACKAGE_FILES_EXCEPTIONS = {
     "lyric": {"homeassistant": {"aiolyric"}},
     # https://github.com/microBeesTech/pythonSDK/
     "microbees": {"homeassistant": {"microbeespy"}},
-    # https://github.com/tiagocoutinho/async_modbus
-    "nibe_heatpump": {"nibe": {"async-modbus"}},
     # https://github.com/ejpenney/pyobihai
     "obihai": {"homeassistant": {"pyobihai"}},
     # https://github.com/iamkubi/pydactyl

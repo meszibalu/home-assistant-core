@@ -7,13 +7,13 @@ from collections import namedtuple
 from collections.abc import Awaitable, Callable, Coroutine
 import functools
 import logging
-from typing import Any, cast
+from typing import Any
 
 from aioasuswrt.asuswrt import AsusWrt as AsusWrtLegacy
 from aiohttp import ClientSession
 from asusrouter import AsusRouter, AsusRouterError
 from asusrouter.config import ARConfigKey
-from asusrouter.modules.client import AsusClient
+from asusrouter.modules.client import AsusClient, ConnectionState
 from asusrouter.modules.data import AsusData
 from asusrouter.modules.homeassistant import convert_to_ha_data, convert_to_ha_sensors
 from asusrouter.tools.connection import get_cookie_jar
@@ -125,6 +125,8 @@ class AsusWrtBridge(ABC):
         self._firmware: str | None = None
         self._label_mac: str | None = None
         self._model: str | None = None
+        self._model_id: str | None = None
+        self._serial_number: str | None = None
 
     @property
     def configuration_url(self) -> str:
@@ -150,6 +152,16 @@ class AsusWrtBridge(ABC):
     def model(self) -> str | None:
         """Return model information."""
         return self._model
+
+    @property
+    def model_id(self) -> str | None:
+        """Return model_id information."""
+        return self._model_id
+
+    @property
+    def serial_number(self) -> str | None:
+        """Return serial number information."""
+        return self._serial_number
 
     @property
     @abstractmethod
@@ -207,7 +219,7 @@ class AsusWrtLegacyBridge(AsusWrtBridge):
     @property
     def is_connected(self) -> bool:
         """Get connected status."""
-        return cast(bool, self._api.is_connected)
+        return self._api.is_connected
 
     async def async_connect(self) -> None:
         """Connect to the device."""
@@ -223,8 +235,7 @@ class AsusWrtLegacyBridge(AsusWrtBridge):
 
     async def async_disconnect(self) -> None:
         """Disconnect to the device."""
-        if self._api is not None and self._protocol == PROTOCOL_TELNET:
-            self._api.connection.disconnect()
+        await self._api.async_disconnect()
 
     async def async_get_connected_devices(self) -> dict[str, WrtDevice]:
         """Get list of connected devices."""
@@ -368,6 +379,8 @@ class AsusWrtHttpBridge(AsusWrtBridge):
         self._configuration_url = self._api.webpanel
         self._firmware = str(_identity.firmware)
         self._model = _identity.model
+        self._model_id = _identity.product_id
+        self._serial_number = _identity.serial
 
     async def async_disconnect(self) -> None:
         """Disconnect to the device."""
@@ -423,6 +436,7 @@ class AsusWrtHttpBridge(AsusWrtBridge):
             if dev.connection is not None
             and dev.description is not None
             and dev.connection.ip_address is not None
+            and dev.state is ConnectionState.CONNECTED
         }
 
     async def async_get_available_sensors(self) -> dict[str, dict[str, Any]]:
