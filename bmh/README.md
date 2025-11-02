@@ -1,12 +1,20 @@
-
 # Bali Művek Home Controller
 
 ## Running docker image
 
-BMH can run as a docker container with the following command:
+### Preparation
+
+Pull BMH image first:
 
 ```bash
 docker pull ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable
+```
+
+### Running
+
+To run BMH image execute the following command:
+
+```bash
 docker run --privileged -d --restart always \
   -e TZ=Europe/Budapest \
   -v /opt/homeassistant:/config \
@@ -17,16 +25,33 @@ docker run --privileged -d --restart always \
 
 ## Upgrade docker image
 
-Stop and remove previous BMH containers. The previous container must be removed, because it was started with `--restart always` flag previously.
+### Preparation
+
+Previous BMH container must be stopped and removed during the upgrade, because it was started with `--restart always` flag previously.
 
 ```bash
-docker stop $(docker ps -q --filter ancestor=ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable)
-docker rm $(docker ps -aq --filter ancestor=ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable)
-# remove images otherwise we will run out of space quickly
-docker rmi $(docker images -aq)
+# save image id
+IMAGE=$(docker ps -q --filter ancestor=ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable)
+
+# pull
+docker pull ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable
+
+# stop and remove
+docker stop $IMAGE
+docker rm $IMAGE
 ```
 
-Start BMH docker image.
+### Running
+
+The container must be started the same way as before.
+
+### Cleanup
+
+The old images should be removed after the upgrade otherwise we will run out of space quickly.
+
+```bash
+docker image prune
+```
 
 ## Building docker image
 
