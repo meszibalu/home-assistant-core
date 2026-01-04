@@ -31,12 +31,14 @@ RUN \
     && pip3 install uv==0.9.6
 
 COPY bmh/liblgpio.so.1 /usr/lib
-COPY bmh/*.whl /tmp/bmh/
+COPY bmh/*.whl /tmp/wheels/
 
 RUN \
-    uv pip install --no-build /tmp/bmh/lgpio-* && \
-    uv pip install --no-build /tmp/bmh/bmh-* && \
-    rm -rf /tmp/bmh
+    uv pip install --no-build \
+      /tmp/wheels/lgpio-*.whl \
+      /tmp/wheels/rpi_lgpio-*.whl \
+      /tmp/wheels/bmh-*.whl && \
+    rm -rf /tmp/wheels
 
 WORKDIR /usr/src
 
