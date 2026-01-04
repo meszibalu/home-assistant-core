@@ -5,9 +5,8 @@ Sometimes we have to regenerate the contents of `venv` folder. It can be done wi
 ```bash
 rm -rf venv
 python3.XXX -m venv venv
-script/setup
-deactivate
 . venv/bin/activate
+script/setup
 ```
 
 Where `XXX` is the required python version.
