@@ -26,6 +26,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Sensitivity',
     'options': dict({
     }),
     'original_device_class': None,
@@ -85,6 +86,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Sensitivity',
     'options': dict({
     }),
     'original_device_class': None,
@@ -144,6 +146,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Sensitivity',
     'options': dict({
     }),
     'original_device_class': None,
@@ -202,6 +205,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Temperature display mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -259,6 +263,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Operating mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -317,6 +322,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Lighting',
     'options': dict({
     }),
     'original_device_class': None,
@@ -377,6 +383,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup',
     'options': dict({
     }),
     'original_device_class': None,
@@ -437,6 +444,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Temperature level',
     'options': dict({
     }),
     'original_device_class': None,
@@ -506,6 +514,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'LED Color',
     'options': dict({
     }),
     'original_device_class': None,
@@ -576,6 +585,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup',
     'options': dict({
     }),
     'original_device_class': None,
@@ -637,6 +647,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup',
     'options': dict({
     }),
     'original_device_class': None,
@@ -696,6 +707,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Operating mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -755,6 +767,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup',
     'options': dict({
     }),
     'original_device_class': None,
@@ -816,6 +829,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Sound volume',
     'options': dict({
     }),
     'original_device_class': None,
@@ -875,6 +889,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Operating mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -934,6 +949,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup',
     'options': dict({
     }),
     'original_device_class': None,
@@ -995,6 +1011,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Sound volume',
     'options': dict({
     }),
     'original_device_class': None,
@@ -1055,6 +1072,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Clean mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -1087,6 +1105,76 @@
     'state': 'Vacuum & Mop',
   })
 # ---
+# name: test_selects[eufy_vacuum_omni_e28][select.2bavs_ab6031x_44pe_clean_mode-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': set({
+    }),
+    'area_id': None,
+    'capabilities': dict({
+      'options': list([
+        'Auto Mop & Vacuum',
+        'Auto Vacuum',
+        'Auto Deep Mop & Vacuum',
+        'Quick Mop & Vacuum',
+        'Quick Vacuum',
+        'Low Noise Mop & Vacuum',
+        'Low Noise Vacuum',
+        'Eufy Customize Mode',
+      ]),
+    }),
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'select',
+    'entity_category': None,
+    'entity_id': 'select.2bavs_ab6031x_44pe_clean_mode',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'Clean mode',
+    'options': dict({
+    }),
+    'original_device_class': None,
+    'original_icon': None,
+    'original_name': 'Clean mode',
+    'platform': 'matter',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'clean_mode',
+    'unique_id': '00000000000004D2-0000000000000028-MatterNodeDevice-1-MatterRvcCleanMode-85-1',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_selects[eufy_vacuum_omni_e28][select.2bavs_ab6031x_44pe_clean_mode-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      'friendly_name': '2BAVS-AB6031X-44PE Clean mode',
+      'options': list([
+        'Auto Mop & Vacuum',
+        'Auto Vacuum',
+        'Auto Deep Mop & Vacuum',
+        'Quick Mop & Vacuum',
+        'Quick Vacuum',
+        'Low Noise Mop & Vacuum',
+        'Low Noise Vacuum',
+        'Eufy Customize Mode',
+      ]),
+    }),
+    'context': <ANY>,
+    'entity_id': 'select.2bavs_ab6031x_44pe_clean_mode',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'Auto Mop & Vacuum',
+  })
+# ---
 # name: test_selects[eve_energy_20ecn4101][select.eve_energy_20ecn4101_power_on_behavior_on_startup_bottom-entry]
   EntityRegistryEntrySnapshot({
     'aliases': set({
@@ -1115,6 +1203,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup (bottom)',
     'options': dict({
     }),
     'original_device_class': None,
@@ -1176,6 +1265,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup (top)',
     'options': dict({
     }),
     'original_device_class': None,
@@ -1237,6 +1327,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup',
     'options': dict({
     }),
     'original_device_class': None,
@@ -1298,6 +1389,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup',
     'options': dict({
     }),
     'original_device_class': None,
@@ -1331,7 +1423,7 @@
     'state': 'previous',
   })
 # ---
-# name: test_selects[eve_thermo][select.eve_thermo_temperature_display_mode-entry]
+# name: test_selects[eve_thermo_v4][select.eve_thermo_20ebp1701_temperature_display_mode-entry]
   EntityRegistryEntrySnapshot({
     'aliases': set({
     }),
@@ -1349,7 +1441,7 @@
     'disabled_by': None,
     'domain': 'select',
     'entity_category': <EntityCategory.CONFIG: 'config'>,
-    'entity_id': 'select.eve_thermo_temperature_display_mode',
+    'entity_id': 'select.eve_thermo_20ebp1701_temperature_display_mode',
     'has_entity_name': True,
     'hidden_by': None,
     'icon': None,
@@ -1357,6 +1449,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Temperature display mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -1371,17 +1464,75 @@
     'unit_of_measurement': None,
   })
 # ---
-# name: test_selects[eve_thermo][select.eve_thermo_temperature_display_mode-state]
+# name: test_selects[eve_thermo_v4][select.eve_thermo_20ebp1701_temperature_display_mode-state]
   StateSnapshot({
     'attributes': ReadOnlyDict({
-      'friendly_name': 'Eve Thermo Temperature display mode',
+      'friendly_name': 'Eve Thermo 20EBP1701 Temperature display mode',
       'options': list([
         'Celsius',
         'Fahrenheit',
       ]),
     }),
     'context': <ANY>,
-    'entity_id': 'select.eve_thermo_temperature_display_mode',
+    'entity_id': 'select.eve_thermo_20ebp1701_temperature_display_mode',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'Celsius',
+  })
+# ---
+# name: test_selects[eve_thermo_v5][select.eve_thermo_20ecd1701_temperature_display_mode-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': set({
+    }),
+    'area_id': None,
+    'capabilities': dict({
+      'options': list([
+        'Celsius',
+        'Fahrenheit',
+      ]),
+    }),
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'select',
+    'entity_category': <EntityCategory.CONFIG: 'config'>,
+    'entity_id': 'select.eve_thermo_20ecd1701_temperature_display_mode',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'Temperature display mode',
+    'options': dict({
+    }),
+    'original_device_class': None,
+    'original_icon': None,
+    'original_name': 'Temperature display mode',
+    'platform': 'matter',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'temperature_display_mode',
+    'unique_id': '00000000000004D2-000000000000000C-MatterNodeDevice-1-TrvTemperatureDisplayMode-516-0',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_selects[eve_thermo_v5][select.eve_thermo_20ecd1701_temperature_display_mode-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      'friendly_name': 'Eve Thermo 20ECD1701 Temperature display mode',
+      'options': list([
+        'Celsius',
+        'Fahrenheit',
+      ]),
+    }),
+    'context': <ANY>,
+    'entity_id': 'select.eve_thermo_20ecd1701_temperature_display_mode',
     'last_changed': <ANY>,
     'last_reported': <ANY>,
     'last_updated': <ANY>,
@@ -1415,6 +1566,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Lighting',
     'options': dict({
     }),
     'original_device_class': None,
@@ -1475,6 +1627,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup',
     'options': dict({
     }),
     'original_device_class': None,
@@ -1535,6 +1688,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Sensitivity',
     'options': dict({
     }),
     'original_device_class': None,
@@ -1599,6 +1753,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Button Press Delay',
     'options': dict({
     }),
     'original_device_class': None,
@@ -1675,6 +1830,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Dimming Speed',
     'options': dict({
     }),
     'original_device_class': None,
@@ -1756,6 +1912,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'LED Color',
     'options': dict({
     }),
     'original_device_class': None,
@@ -1839,6 +1996,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'LED Effect',
     'options': dict({
     }),
     'original_device_class': None,
@@ -1911,6 +2069,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Local Protection',
     'options': dict({
     }),
     'original_device_class': None,
@@ -1968,6 +2127,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Local Timer',
     'options': dict({
     }),
     'original_device_class': None,
@@ -2027,6 +2187,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup (Load Control)',
     'options': dict({
     }),
     'original_device_class': None,
@@ -2088,6 +2249,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup (RGB Indicator)',
     'options': dict({
     }),
     'original_device_class': None,
@@ -2147,6 +2309,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Smart Bulb Mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -2206,6 +2369,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Switch Mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -2266,6 +2430,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Temperature level',
     'options': dict({
     }),
     'original_device_class': None,
@@ -2324,6 +2489,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Temperature display mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -2389,6 +2555,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power level (W)',
     'options': dict({
     }),
     'original_device_class': None,
@@ -2454,6 +2621,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Operating mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -2513,6 +2681,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Sound volume',
     'options': dict({
     }),
     'original_device_class': None,
@@ -2546,6 +2715,64 @@
     'state': 'silent',
   })
 # ---
+# name: test_selects[mock_thermostat][select.mock_thermostat_temperature_display_mode-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': set({
+    }),
+    'area_id': None,
+    'capabilities': dict({
+      'options': list([
+        'Celsius',
+        'Fahrenheit',
+      ]),
+    }),
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'select',
+    'entity_category': <EntityCategory.CONFIG: 'config'>,
+    'entity_id': 'select.mock_thermostat_temperature_display_mode',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'Temperature display mode',
+    'options': dict({
+    }),
+    'original_device_class': None,
+    'original_icon': None,
+    'original_name': 'Temperature display mode',
+    'platform': 'matter',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'temperature_display_mode',
+    'unique_id': '00000000000004D2-0000000000000096-MatterNodeDevice-1-TrvTemperatureDisplayMode-516-0',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_selects[mock_thermostat][select.mock_thermostat_temperature_display_mode-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      'friendly_name': 'Mock Thermostat Temperature display mode',
+      'options': list([
+        'Celsius',
+        'Fahrenheit',
+      ]),
+    }),
+    'context': <ANY>,
+    'entity_id': 'select.mock_thermostat_temperature_display_mode',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'Celsius',
+  })
+# ---
 # name: test_selects[mounted_dimmable_load_control_fixture][select.mock_mounted_dimmable_load_control_power_on_behavior_on_startup-entry]
   EntityRegistryEntrySnapshot({
     'aliases': set({
@@ -2574,6 +2801,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup',
     'options': dict({
     }),
     'original_device_class': None,
@@ -2633,6 +2861,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Dimming Edge',
     'options': dict({
     }),
     'original_device_class': None,
@@ -2703,6 +2932,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Dimming Speed',
     'options': dict({
     }),
     'original_device_class': None,
@@ -2784,6 +3014,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'LED Color',
     'options': dict({
     }),
     'original_device_class': None,
@@ -2854,6 +3085,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup (1)',
     'options': dict({
     }),
     'original_device_class': None,
@@ -2915,6 +3147,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup (6)',
     'options': dict({
     }),
     'original_device_class': None,
@@ -2974,6 +3207,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Relay',
     'options': dict({
     }),
     'original_device_class': None,
@@ -3031,6 +3265,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Smart Bulb Mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -3093,6 +3328,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Switch Mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -3157,6 +3393,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup',
     'options': dict({
     }),
     'original_device_class': None,
@@ -3218,6 +3455,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup',
     'options': dict({
     }),
     'original_device_class': None,
@@ -3279,6 +3517,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup',
     'options': dict({
     }),
     'original_device_class': None,
@@ -3340,6 +3579,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup',
     'options': dict({
     }),
     'original_device_class': None,
@@ -3401,6 +3641,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup',
     'options': dict({
     }),
     'original_device_class': None,
@@ -3467,6 +3708,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -3532,6 +3774,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Temperature level',
     'options': dict({
     }),
     'original_device_class': None,
@@ -3592,6 +3835,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -3652,6 +3896,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Operating mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -3713,6 +3958,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Energy management mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -3775,6 +4021,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -3834,6 +4081,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Number of rinses',
     'options': dict({
     }),
     'original_device_class': None,
@@ -3893,6 +4141,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Spin speed',
     'options': dict({
     }),
     'original_device_class': None,
@@ -3953,6 +4202,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Temperature level',
     'options': dict({
     }),
     'original_device_class': None,
@@ -4012,6 +4262,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -4073,6 +4324,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Energy management mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -4135,6 +4387,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup',
     'options': dict({
     }),
     'original_device_class': None,
@@ -4197,6 +4450,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Clean mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -4260,6 +4514,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Clean mode',
     'options': dict({
     }),
     'original_device_class': None,
@@ -4322,6 +4577,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Power-on behavior on startup',
     'options': dict({
     }),
     'original_device_class': None,
