@@ -1,49 +1,36 @@
 # Bali Művek Home Controller
 
-## Running docker image
+## Running with docker compose
 
 ### Preparation
 
-Pull BMH image first:
+Pull docker compose YAML:
 
 ```bash
-docker pull ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable
+mkdir -p /opt/homeassistant/config
+cd /opt/homeassistant
+
+wget https://raw.githubusercontent.com/meszibalu/home-assistant-core/refs/heads/bmh/bmh/docker-compose.yaml
+wget -O .env https://raw.githubusercontent.com/meszibalu/home-assistant-core/refs/heads/bmh/bmh/docker-compose.env
 ```
 
-### Running
+The `.env` file contains the default environment settings. Please edit it.
 
-To run BMH image execute the following command:
+### Download/Upgrade image
+
+The image can be downloaded or upgraded with the following command:
 
 ```bash
-docker run --privileged -d --restart always \
-  -e TZ=Europe/Budapest \
-  -v /opt/homeassistant:/config \
-  -v /run/dbus:/run/dbus:ro \
-  --network=host \
-  ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable
+docker compose pull
 ```
 
-## Upgrade docker image
+### Run
 
-### Preparation
-
-Previous BMH container must be stopped and removed during the upgrade, because it was started with `--restart always` flag previously.
+It can be run with the following command:
 
 ```bash
-# save image id
-IMAGE=$(docker ps -q --filter ancestor=ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable)
-
-# pull
-docker pull ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable
-
-# stop and remove
-docker stop $IMAGE
-docker rm $IMAGE
+docker compose up -d
 ```
-
-### Running
-
-The container must be started the same way as before.
 
 ### Cleanup
 

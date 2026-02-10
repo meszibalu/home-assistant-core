@@ -1,0 +1,15 @@
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: "ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable"
+    volumes:
+      - ${HA_ROOT:-/opt/homeassistant/config}:/config
+      - /usr/share/zoneinfo/${TZ:-UTC}:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    env_file:
+      - .env
+    restart: always
+    privileged: true
+    network_mode: host
+    environment:
+      TZ: ${TZ:-UTC}
