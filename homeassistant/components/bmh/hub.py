@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from abc import abstractmethod
 import asyncio
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
@@ -9,15 +10,17 @@ import logging
 from typing import Any
 
 import bmh
-
 from homeassistant.components import persistent_notification
 from homeassistant.core import HomeAssistant
 
+from .const import DOMAIN
 from .strings import Strings
 
 _LOGGER = logging.getLogger(__name__)
+_DOMAIN_LOCK = DOMAIN + ".lock"
 
 bmh.TRACE_MESSAGES = True
+# bmh.ERROR_INJECTION_PROBABILITY = 0.05
 
 
 class BmhDevicePort:
@@ -112,25 +115,17 @@ class BmhResource:
     """Base class for hub resources (I/O inputs, outputs, 1-Wire ports)."""
 
     def __init__(
-        self, hub: BmhHub, device: bmh.Device, device_port: BmhDevicePort
+        self,
+        hub: BmhHub,
+        device_port: BmhDevicePort,
+        on_error: Callable[[Exception], None] | None,
     ) -> None:
         """Create the resource."""
 
         self._hub = hub
-        self._device = device
         self._device_port = device_port
-
-    @property
-    def device(self) -> bmh.Device:
-        """Return the associated BmhDevice."""
-
-        return self._device
-
-    @property
-    def port(self) -> int:
-        """Return the associated device port."""
-
-        return self._device_port.port
+        self._device: bmh.Device | None = None
+        self._on_error = on_error
 
     @property
     def device_port(self) -> BmhDevicePort:
@@ -138,10 +133,63 @@ class BmhResource:
 
         return self._device_port
 
+    @property
+    def device(self) -> bmh.Device:
+        """Return the associated BmhDevice."""
+
+        if self._device is None:
+            raise RuntimeError("Device is not opened, call async_open() first")
+
+        return self._device
+
+    @property
+    def address(self) -> int:
+        """Return the associated device address."""
+
+        return self._device_port.address
+
+    @property
+    def port(self) -> int:
+        """Return the associated device port."""
+
+        return self._device_port.port
+
+    async def async_open(self) -> None:
+        """Open the resource."""
+
+        self._device = await self._hub.async_open(self)
+
     async def async_release(self) -> None:
         """Release the resource."""
 
         await self._hub.async_release(self)
+
+    def read(self) -> None:
+        """Schedule reading port in the background.
+
+        The result is delegated to the on_change or on_error method.
+        """
+
+        self._hub.background_io(self._read)
+
+    @abstractmethod
+    def _read(self) -> None:
+        pass
+
+    def call_on_error(self, error: Exception) -> None:
+        """Call on_error method if an error occurs."""
+
+        callback = self._on_error
+
+        if callback is None:
+            self.log_error(error)
+        else:
+            callback(error)
+
+    def log_error(self, error: Exception) -> None:
+        """Logs device specific error at warning level."""
+
+        _LOGGER.warning("Error occurred on '%s'", self.device_port, exc_info=error)
 
 
 class BmhIoInput(BmhResource):
@@ -150,33 +198,35 @@ class BmhIoInput(BmhResource):
     def __init__(
         self,
         hub: BmhHub,
-        device: bmh.Device,
-        port: int,
+        device_port: BmhDevicePort,
         invert: bool,
         on_change: Callable[[bool], None],
+        on_error: Callable[[Exception], None] | None,
     ) -> None:
         """Create I/O input resource."""
 
-        super().__init__(hub, device, BmhDevicePort.get_io_input(device.id, port))
+        super().__init__(hub, device_port, on_error)
 
         self._invert = invert
         self._on_change = on_change
 
-    def __read(self) -> None:
+    @property
+    def invert(self) -> bool:
+        """Return if input is inverted or not."""
+
+        return self._invert
+
+    def _read(self) -> None:
         _LOGGER.debug("Reading '%s'", self.device_port)
 
-        inputs = self._device.get_inputs()
+        try:
+            inputs = self.device.get_inputs()
+        except Exception as e:  # noqa: BLE001
+            self.call_on_error(e)
+            return
+
         value = inputs & (1 << self.port) != 0
-
         self.call_on_change(value)
-
-    def read(self) -> None:
-        """Schedule reading the input port in the background.
-
-        The result is delegated to the on_change method.
-        """
-
-        self._hub.background_io(self.__read)
 
     def call_on_change(self, value: bool) -> None:
         """Call on_change method with the new input state."""
@@ -200,34 +250,57 @@ class BmhIoOutput(BmhResource):
     def __init__(
         self,
         hub: BmhHub,
-        device: bmh.Device,
-        port: int,
+        device_port: BmhDevicePort,
         pwm: bool,
         invert: bool,
         on_change: Callable[[int], None],
+        on_error: Callable[[Exception], None] | None,
     ) -> None:
         """Create I/O output resource."""
 
-        super().__init__(hub, device, BmhDevicePort.get_io_output(device.id, port))
+        super().__init__(hub, device_port, on_error)
 
         self._pwm = pwm
         self._invert = invert
         self._on_change = on_change
 
-    def __read(self) -> None:
+    @property
+    def pwm(self) -> bool:
+        """Return if PWM is enabled for the output or not."""
+
+        return self._pwm
+
+    @property
+    def invert(self) -> bool:
+        """Return if output is inverted or not."""
+
+        return self._invert
+
+    def _read(self) -> None:
         _LOGGER.debug("Reading '%s'", self.device_port)
 
-        value = self._device.get_output(self.port)
+        try:
+            value = self.device.get_output(self.port)
+        except Exception as e:  # noqa: BLE001
+            self.call_on_error(e)
+            return
 
         self.call_on_change(value)
 
-    def read(self) -> None:
-        """Schedule reading the output port in the background.
+    def call_on_change(self, value: int) -> None:
+        """Call on_change method with the new output state."""
 
-        The result is delegated to the on_change method.
-        """
+        _LOGGER.debug("'%s' changed to '%d'", self.device_port, value)
 
-        self._hub.background_io(self.__read)
+        callback = self._on_change
+
+        if callback is None:
+            return
+
+        if self._invert:
+            callback(255 - value)
+        else:
+            callback(value)
 
     def __write(self, value: int) -> None:
         _LOGGER.info("Changing '%s' to '%d'", self.device_port, value)
@@ -276,21 +349,6 @@ class BmhIoOutput(BmhResource):
 
         await self.async_write(0)
 
-    def call_on_change(self, value: int) -> None:
-        """Call on_change method with the new output state."""
-
-        _LOGGER.debug("'%s' changed to '%d'", self.device_port, value)
-
-        callback = self._on_change
-
-        if callback is None:
-            return
-
-        if self._invert:
-            callback(255 - value)
-        else:
-            callback(value)
-
 
 class Bmh1wPort(BmhResource):
     """Hub resource implementation for 1-Wire ports."""
@@ -298,32 +356,28 @@ class Bmh1wPort(BmhResource):
     def __init__(
         self,
         hub: BmhHub,
-        device: bmh.Device,
-        port: int,
-        on_change: Callable[[float | str | None], None],
+        device_port: BmhDevicePort,
+        on_change: Callable[[float | None], None],
+        on_error: Callable[[Exception], None] | None,
     ) -> None:
         """Create 1-Wire port resource."""
 
-        super().__init__(hub, device, BmhDevicePort.get_1w_port(device.id, port))
+        super().__init__(hub, device_port, on_error)
 
         self._on_change = on_change
 
-    def __read(self) -> None:
+    def _read(self) -> None:
         _LOGGER.debug("Reading '%s'", self.device_port)
 
-        temperature = self._device.get_temperature(self.port)
+        try:
+            temperature = self._device.get_temperature(self.port)
+        except Exception as e:  # noqa: BLE001
+            self.call_on_error(e)
+            return
 
         self.call_on_change(temperature)
 
-    def read(self) -> None:
-        """Schedule reading the 1-Wire port in the background.
-
-        The result is delegated to the on_change method.
-        """
-
-        self._hub.background_io(self.__read)
-
-    def call_on_change(self, temperature: float | str | None) -> None:
+    def call_on_change(self, temperature: float | None) -> None:
         """Call on_change method with the new 1-Wire port value."""
 
         _LOGGER.debug("'%s' changed to '%s'", self.device_port, temperature)
@@ -338,9 +392,6 @@ class Bmh1wPort(BmhResource):
 
 class BmhHub:
     """Bali Művek Home Controller hub for managing devices from Home Assistant."""
-
-    _instance_lock = asyncio.Lock()
-    _instance: BmhHub | None = None
 
     def __init__(self, hass: HomeAssistant) -> None:
         """Create a new hub.
@@ -401,21 +452,24 @@ class BmhHub:
     async def async_get(hass: HomeAssistant) -> BmhHub:
         """Get the hub singleton for Home Assistant."""
 
-        if BmhHub._instance is not None:
-            return BmhHub._instance
+        # happy path
+        if DOMAIN in hass.data:
+            return hass.data[DOMAIN]
 
-        async with BmhHub._instance_lock:
-            if BmhHub._instance is not None:
-                return BmhHub._instance
+        lock = hass.data.setdefault(_DOMAIN_LOCK, asyncio.Lock())
+
+        async with lock:
+            if DOMAIN in hass.data:
+                return hass.data[DOMAIN]
 
             _LOGGER.info("Opening hub")
 
             hub = BmhHub(hass)
             await hub.async_io(hub.__check_devices)
 
-            BmhHub._instance = hub
+            hass.data[DOMAIN] = hub
 
-            return BmhHub._instance
+            return hub
 
     def __notify_unsafe(self, title: str, message: str) -> None:
         persistent_notification.async_create(self._hass, message, "[BMH] " + title)
@@ -458,75 +512,127 @@ class BmhHub:
 
         await self.async_io(self._handle.get_device, address)
 
+    def __call_on_change(self, device_port: BmhDevicePort, value: any) -> None:
+        if device_port not in self._resources:
+            return
+
+        resource = self._resources[device_port]
+        resource.call_on_change(value)  # type: ignore[attr-defined]
+
+    def __call_on_error(self, device_port: BmhDevicePort, error: Exception) -> None:
+        if device_port not in self._resources:
+            return
+
+        resource = self._resources[device_port]
+        resource.call_on_error(error)
+
+    def __on_io_input_all_interrupt(self, device: bmh.DeviceIo, status: int) -> None:
+        try:
+            # we have to read output to clear interrupt
+            inputs = device.get_inputs()
+        except Exception as e:  # noqa: BLE001
+            for port in range(6):
+                if status & bmh.DeviceIo.INPUT_INTERRUPT_CHANNEL(port):
+                    device_port = BmhDevicePort.get_io_input(device.id, port)
+                    self.__call_on_error(device_port, e)
+
+            return
+
+        for port in range(6):
+            if status & bmh.DeviceIo.INPUT_INTERRUPT_CHANNEL(port):
+                device_port = BmhDevicePort.get_io_input(device.id, port)
+                value = bool(inputs & (1 << port))
+
+                self.__call_on_change(device_port, value)
+
+    def __on_io_output_port_interrupt(self, device: bmh.DeviceIo, port: int) -> None:
+        device_port = BmhDevicePort.get_io_output(device.id, port)
+
+        try:
+            # we have to read output to clear interrupt
+            value = device.get_output(port)
+        except Exception as e:  # noqa: BLE001
+            self.__call_on_error(device_port, e)
+            return
+
+        self.__call_on_change(device_port, value)
+
+    def __on_io_backup_mode_interrupt(self, device: bmh.DeviceIo) -> None:
+        device_string = Strings.get_type_address(device.id)
+
+        try:
+            backup_mode = device.is_backup_mode()
+        except Exception as e:  # noqa: BLE001
+            _LOGGER.warning(
+                "Could not get device '%s' reset reason", device_string, exc_info=e
+            )
+            backup_mode = "UNKNOWN"
+
+        self.notify(
+            "Backup mode",
+            f"Device '{device_string}' changed backup mode: {backup_mode}",
+        )
+
     def __on_io_interrupt(self, device: bmh.DeviceIo, status: int) -> int:
         handled = 0
 
         if status & bmh.DeviceIo.INPUT_INTERRUPT_CHANNELS:
+            self.__on_io_input_all_interrupt(device, status)
             handled |= bmh.DeviceIo.INPUT_INTERRUPT_CHANNELS
-            inputs = device.get_inputs()
-
-            for port in range(6):
-                if not status & bmh.DeviceIo.INPUT_INTERRUPT_CHANNEL(port):
-                    continue
-
-                device_port = BmhDevicePort.get_io_input(device.id, port)
-
-                if device_port not in self._resources:
-                    continue
-
-                value = bool(inputs & (1 << port))
-
-                resource = self._resources[device_port]
-                resource.call_on_change(value)  # type: ignore[attr-defined]
 
         if status & bmh.DeviceIo.OUTPUT_INTERRUPT_CHANNELS:
+            for port in range(6):
+                if status & bmh.DeviceIo.OUTPUT_INTERRUPT_CHANNEL(port):
+                    self.__on_io_output_port_interrupt(device, port)
+
             handled |= bmh.DeviceIo.OUTPUT_INTERRUPT_CHANNELS
 
-            for port in range(6):
-                if not status & bmh.DeviceIo.OUTPUT_INTERRUPT_CHANNEL(port):
-                    continue
-
-                # we have to read output to clear interrupt
-                value = device.get_output(port)
-
-                device_port = BmhDevicePort.get_io_output(device.id, port)
-
-                if device_port not in self._resources:
-                    continue
-
-                resource = self._resources[device_port]
-                resource.call_on_change(value)  # type: ignore[attr-defined]
-
         if status & bmh.DeviceIo.BACKUP_MODE_INTERRUPT_CHANNEL:
+            self.__on_io_backup_mode_interrupt(device)
             handled |= bmh.DeviceIo.BACKUP_MODE_INTERRUPT_CHANNEL
-
-            device_string = Strings.get_type_address(device.id)
-            backup_mode = device.is_backup_mode()
-
-            self.notify(
-                "Backup mode",
-                f"Device '{device_string}' changed backup mode: {backup_mode}",
-            )
 
         return handled
 
-    def __on_1w_interrupt(self, device: bmh.Device1w, status: int) -> int:
-        for port in range(10):
-            if not status & bmh.Device1w.PORT_INTERRUPT_CHANNEL(port):
-                continue
+    def __on_1w_port_interrupt(self, device: bmh.Device1w, port: int) -> None:
+        device_port = BmhDevicePort.get_1w_port(device.id, port)
 
+        try:
             # we have to read temperature to clear interrupt
             temperature = device.get_temperature(port)
+        except Exception as e:  # noqa: BLE001
+            self.__call_on_error(device_port, e)
+            return
 
-            device_port = BmhDevicePort.get_1w_port(device.id, port)
+        self.__call_on_change(device_port, temperature)
 
-            if device_port not in self._resources:
-                continue
-
-            resource = self._resources[device_port]
-            resource.call_on_change(temperature)  # type: ignore[attr-defined]
+    def __on_1w_interrupt(self, device: bmh.Device1w, status: int) -> int:
+        for port in range(10):
+            if status & bmh.Device1w.PORT_INTERRUPT_CHANNEL(port):
+                self.__on_1w_port_interrupt(device, port)
 
         return bmh.Device1w.PORT_INTERRUPT_CHANNELS
+
+    def __on_reset_interrupt(self, device: bmh.Device) -> None:
+        device_string = Strings.get_address(device.id)
+
+        try:
+            reset = device.get_reset()
+            reason = reset.name
+        except Exception as e:  # noqa: BLE001
+            _LOGGER.warning(
+                "Could not get device '%s' reset reason", device_string, exc_info=e
+            )
+            reason = "UNKNOWN"
+
+        self.notify("Reset", f"Device '{device_string}' was reset: {reason}")
+
+        if device.version != bmh.VERSION:
+            self.notify(
+                "Version mismatch",
+                f"Device '{device_string}' ({device.version}) "
+                "does not have the most recent version "
+                f"({bmh.VERSION})",
+            )
 
     def __on_interrupt(self, device: bmh.Device, status: int) -> None:
         handled = 0
@@ -538,119 +644,94 @@ class BmhHub:
                 handled |= self.__on_1w_interrupt(device, status)
 
         if status & bmh.Device.RESET_INTERRUPT_CHANNEL:
+            self.__on_reset_interrupt(device)
             handled |= bmh.Device.RESET_INTERRUPT_CHANNEL
-
-            device_string = Strings.get_address(device.id)
-            reset = device.get_reset()
-
-            if reset is None:
-                reason = "UNKNOWN"
-            else:
-                reason = reset.name
-
-            self.notify("Reset", f"Device '{device_string}' was reset: {reason}")
-
-            if device.version != bmh.VERSION:
-                self.notify(
-                    "Version mismatch",
-                    f"Device '{device_string}' ({device.version}) "
-                    "does not have the most recent version "
-                    f"({bmh.VERSION})",
-                )
 
         not_handled = status & ~handled
 
+        # A device with unhandled interrupt channel will appear in every
+        # interrupt search which might slow down interrupt handling
+        # and response time.
         if not_handled != 0:
             device_string = Strings.get_address(device.id)
 
-            # A device with unhandled interrupt channel will appear in
-            # every interrupt search which might slow down interrupt
-            # handling and response time.
             _LOGGER.warning(
                 "Device '%s' has unhandled interrupts '0x%04X'",
                 device_string,
                 not_handled,
             )
 
-    def __use_resource(self, resource: BmhResource) -> None:
-        self.__check_device_port_available(resource.device_port)
+    def create_io_input(
+        self,
+        address: int,
+        port: int,
+        invert: bool,
+        on_change: Callable[[bool], None],
+        on_error: Callable[[Exception], None] | None,
+    ) -> BmhIoInput:
+        """Create a device for an I/O input.
 
+        The device must be opened before usage.
+        """
+
+        device_port = BmhDevicePort.get_io_input(address, port)
+
+        return BmhIoInput(self, device_port, invert, on_change, on_error)
+
+    def create_io_output(
+        self,
+        address: int,
+        port: int,
+        pwm: bool,
+        invert: bool,
+        on_change: Callable[[int], None],
+        on_error: Callable[[Exception], None] | None,
+    ) -> BmhIoOutput:
+        """Create a device for an I/O output.
+
+        The device must be opened before usage.
+        """
+
+        device_port = BmhDevicePort.get_io_output(address, port)
+
+        return BmhIoOutput(self, device_port, pwm, invert, on_change, on_error)
+
+    def create_1w_port(
+        self,
+        address: int,
+        port: int,
+        on_change: Callable[[float | None], None],
+        on_error: Callable[[Exception], None] | None,
+    ) -> Bmh1wPort:
+        """Create a device for a 1-Wire port.
+
+        The device must be opened before usage.
+        """
+
+        device_port = BmhDevicePort.get_1w_port(address, port)
+
+        return Bmh1wPort(self, device_port, on_change, on_error)
+
+    def __open(self, resource: BmhResource) -> bmh.Device:
         _LOGGER.debug("Using device port '%s'", resource.device_port)
 
-        bus = resource.device.bus
+        self.__check_device_port_available(resource.device_port)
+        device = self._handle.get_device(resource.address)
+
+        self._resources[resource.device_port] = resource
+
+        bus = device.bus
 
         if bus.interrupt_handler is None:
             bus.interrupt_handler = self.__on_interrupt
 
-        self._resources[resource.device_port] = resource
+        return device
 
-    def __open_io_input(
-        self, address: int, port: int, invert: bool, on_change: Callable[[bool], None]
-    ) -> BmhIoInput:
-        device = self._handle.get_device(address)
-        resource = BmhIoInput(self, device, port, invert, on_change)
-
-        self.__use_resource(resource)
-
-        return resource
-
-    def __open_io_output(
-        self,
-        address: int,
-        port: int,
-        pwm: bool,
-        invert: bool,
-        on_change: Callable[[int], None],
-    ) -> BmhIoOutput:
-        device = self._handle.get_device(address)
-        resource = BmhIoOutput(self, device, port, pwm, invert, on_change)
-
-        self.__use_resource(resource)
-
-        return resource
-
-    def __open_1w_port(
-        self, address: int, port: int, on_change: Callable[[float | str | None], None]
-    ) -> Bmh1wPort:
-        device = self._handle.get_device(address)
-        resource = Bmh1wPort(self, device, port, on_change)
-
-        self.__use_resource(resource)
-
-        return resource
-
-    async def async_open_io_input(
-        self, address: int, port: int, invert: bool, on_change: Callable[[bool], None]
-    ) -> BmhIoInput:
-        """Open and use an I/O input device."""
+    async def async_open(self, resource: BmhResource) -> bmh.Device:
+        """Open a device."""
 
         async with self._lock:
-            return await self.async_io(
-                self.__open_io_input, address, port, invert, on_change
-            )
-
-    async def async_open_io_output(
-        self,
-        address: int,
-        port: int,
-        pwm: bool,
-        invert: bool,
-        on_change: Callable[[int], None],
-    ) -> BmhIoOutput:
-        """Open and use an I/O output device."""
-
-        async with self._lock:
-            return await self.async_io(
-                self.__open_io_output, address, port, pwm, invert, on_change
-            )
-
-    async def async_open_1w_port(
-        self, address: int, port: int, on_change: Callable[[float | str | None], None]
-    ) -> Bmh1wPort:
-        """Open and use an 1-Wire port device."""
-
-        async with self._lock:
-            return await self.async_io(self.__open_1w_port, address, port, on_change)
+            return await self.async_io(self.__open, resource)
 
     async def async_release(self, resource: BmhResource) -> None:
         """Release a previously opened device."""
@@ -672,9 +753,14 @@ class BmhHub:
 
         _LOGGER.info("Closing hub")
 
-        async with BmhHub._instance_lock:
-            if BmhHub._instance == self:
-                BmhHub._instance = None
+        lock = self._hass.data.get(_DOMAIN_LOCK)
+
+        if lock is None:
+            return
+
+        async with lock:
+            self._hass.data.pop(DOMAIN)
+            self._hass.data.pop(_DOMAIN_LOCK)
 
         await self.async_io(self.__close)
 

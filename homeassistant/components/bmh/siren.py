@@ -1,6 +1,6 @@
 """Platform for siren integration.
 
-A siren is connected to an I/O Output and it can be switched on or off.
+A siren is connected to an I/O Output, and it can be switched on or off.
 It supports duration (switching on for a certain amount of time) and
 volume level by PWM.
 """
@@ -46,31 +46,19 @@ async def __async_create(
 ) -> BmhSiren:
     hub = await BmhHub.async_get(hass)
 
-    entity = BmhSiren()
-    await entity.async_init(hub, address, output, pwm, invert)
-
-    return entity
+    return BmhSiren(hub, address, output, pwm, invert)
 
 
 class BmhSiren(SirenEntity):
     """Representation of a siren."""
 
-    def __init__(self) -> None:
-        """Initialize a new siren.
-
-        async_init() is required to finish I/O initialization.
-        """
-
-        self._attr_should_poll = False
-
-        self._on = False
-
-    async def async_init(
+    def __init__(
         self, hub: BmhHub, address: int, output: int, pwm: bool, invert: bool
     ) -> None:
-        """Finish initialization and open I/O."""
+        """Initialize a new siren."""
 
         self._attr_unique_id = Strings.get_unique_id(address, output)
+        self._attr_should_poll = False
 
         if pwm:
             volume_feature = SirenEntityFeature.VOLUME_SET
@@ -84,26 +72,42 @@ class BmhSiren(SirenEntity):
             | volume_feature
         )
 
-        # pylint: disable=attribute-defined-outside-init
         self._lock = asyncio.Lock()
         self._sequencer = AsyncSequencer(hub.loop)
 
-        self._io_output = await hub.async_open_io_output(
-            address, output, pwm, invert, self.__on_change
+        self._io_output = hub.create_io_output(
+            address, output, pwm, invert, self.__on_change, self.__on_error
         )
 
+    async def async_added_to_hass(self) -> None:
+        """Open the sensor."""
+
+        await self._io_output.async_open()
+
         self._io_output.read()
-        await self._io_output.async_off()
+        await self.async_turn_off()
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Remove siren from hass and release it."""
+
+        await self.async_turn_off()
+        await self._io_output.async_release()
+
+    def __on_change(self, value: int) -> None:
+        self._attr_is_on = value != 0
+        self.schedule_update_ha_state()
+
+    def __on_error(self, error: Exception) -> None:
+        self._io_output.log_error(error)
+
+        self._attr_is_on = None
+        self.schedule_update_ha_state()
 
     @property
     def is_on(self) -> bool | None:
         """Return true if the siren is on."""
 
-        return self._on
-
-    def __on_change(self, value: int) -> None:
-        self._on = value != 0
-        self.schedule_update_ha_state()
+        return self._attr_is_on
 
     async def __async_turn_on(self, volume_level: int, duration: int) -> None:
         await self._io_output.async_on(volume_level)
@@ -128,9 +132,3 @@ class BmhSiren(SirenEntity):
         """Instruct the siren to turn off."""
 
         await self._sequencer.async_run(self.__async_turn_off())
-
-    async def async_will_remove_from_hass(self) -> None:
-        """Remove siren from hass and release it."""
-
-        await self.async_turn_off()
-        await self._io_output.async_release()

@@ -6,6 +6,7 @@ connected DS18B20 sensors.
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 from homeassistant.components.sensor import (
@@ -47,39 +48,46 @@ async def __async_create(
 ) -> BmhSensor:
     hub = await BmhHub.async_get(hass)
 
-    entity = BmhSensor()
-    await entity.async_init(hub, address, port)
-
-    return entity
+    return BmhSensor(hub, address, port)
 
 
 class BmhSensor(SensorEntity):
     """Representation of a sensor."""
 
-    def __init__(self) -> None:
-        """Initialize a new sensor.
-
-        async_init() is required to finish I/O initialization.
-        """
-
-        self._attr_should_poll = False
-        self.entity_description = TEMPERATURE_ENTITY_DESCRIPTION
-
-    async def async_init(self, hub: BmhHub, address: int, port: int) -> None:
-        """Finish initialization and open I/O."""
+    def __init__(self, hub: BmhHub, address: int, port: int) -> None:
+        """Initialize a new sensor."""
 
         self._attr_unique_id = Strings.get_unique_id(address, port)
+        self._attr_should_poll = False
 
-        # pylint: disable=attribute-defined-outside-init
-        self._1w_port = await hub.async_open_1w_port(address, port, self.__on_change)
+        self.entity_description = TEMPERATURE_ENTITY_DESCRIPTION
+
+        self._1w_port = hub.create_1w_port(
+            address, port, self.__on_change, self.__on_error
+        )
+
+    async def async_added_to_hass(self) -> None:
+        """Open the sensor."""
+
+        await self._1w_port.async_open()
 
         self._1w_port.read()
-
-    def __on_change(self, value: float | str | None) -> None:
-        self._attr_native_value = value
-        self.schedule_update_ha_state()
 
     async def async_will_remove_from_hass(self) -> None:
         """Remove sensor from hass and release it."""
 
         await self._1w_port.async_release()
+
+    def __on_change(self, value: float | None) -> None:
+        if value is not None and math.isnan(value):
+            self.__on_error(ValueError("Invalid temperature value"))
+            return
+
+        self._attr_native_value = value
+        self.schedule_update_ha_state()
+
+    def __on_error(self, error: Exception) -> None:
+        self._1w_port.log_error(error)
+
+        self._attr_native_value = None
+        self.schedule_update_ha_state()

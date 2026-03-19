@@ -44,21 +44,18 @@ async def __async_create(
 ) -> BmhBinarySensor:
     hub = await BmhHub.async_get(hass)
 
-    entity = BmhBinarySensor(device_class)
-    await entity.async_init(hub, address, input, invert)
-
-    return entity
+    return BmhBinarySensor(hub, device_class, address, input, invert)
 
 
 class BmhBinarySensor(BinarySensorEntity):
     """Representation of a binary sensor."""
 
-    def __init__(self, device_class: str) -> None:
-        """Initialize a new binary sensor.
+    def __init__(
+        self, hub: BmhHub, device_class: str, address: int, input: int, invert: bool
+    ) -> None:
+        """Initialize a new binary sensor."""
 
-        async_init() is required to finish I/O initialization.
-        """
-
+        self._attr_unique_id = Strings.get_unique_id(address, input)
         self._attr_should_poll = False
 
         if device_class is not None:
@@ -67,25 +64,28 @@ class BmhBinarySensor(BinarySensorEntity):
             except ValueError:
                 _LOGGER.warning("Unknown device class '%s'", device_class)
 
-    async def async_init(
-        self, hub: BmhHub, address: int, input: int, invert: bool
-    ) -> None:
-        """Finish initialization and open I/O."""
-
-        self._attr_unique_id = Strings.get_unique_id(address, input)
-
-        # pylint: disable=attribute-defined-outside-init
-        self._io_input = await hub.async_open_io_input(
-            address, input, invert, self.__on_change
+        self._io_input = hub.create_io_input(
+            address, input, invert, self.__on_change, self.__on_error
         )
 
-        self._io_input.read()
+    async def async_added_to_hass(self) -> None:
+        """Open the binary sensor."""
 
-    def __on_change(self, value: bool) -> None:
-        self._attr_is_on = value
-        self.schedule_update_ha_state()
+        await self._io_input.async_open()
+
+        self._io_input.read()
 
     async def async_will_remove_from_hass(self) -> None:
         """Remove binary sensor from hass and release it."""
 
         await self._io_input.async_release()
+
+    def __on_change(self, value: bool) -> None:
+        self._attr_is_on = value
+        self.schedule_update_ha_state()
+
+    def __on_error(self, error: Exception) -> None:
+        self._io_input.log_error(error)
+
+        self._attr_is_on = None
+        self.schedule_update_ha_state()

@@ -33,49 +33,51 @@ async def __async_create(
 ) -> BmhSwitch:
     hub = await BmhHub.async_get(hass)
 
-    entity = BmhSwitch()
-    await entity.async_init(hub, address, output, invert)
-
-    return entity
+    return BmhSwitch(hub, address, output, invert)
 
 
 class BmhSwitch(SwitchEntity):
     """Representation of a switch."""
 
-    def __init__(self) -> None:
-        """Initialize a new switch.
-
-        async_init() is required to finish I/O initialization.
-        """
-
-        self._attr_should_poll = False
-
-        self._on = False
-
-    async def async_init(
-        self, hub: BmhHub, address: int, output: int, invert: bool
-    ) -> None:
-        """Finish initialization and open I/O."""
+    def __init__(self, hub: BmhHub, address: int, output: int, invert: bool) -> None:
+        """Initialize a new switch."""
 
         self._attr_unique_id = Strings.get_unique_id(address, output)
+        self._attr_should_poll = False
 
-        # pylint: disable=attribute-defined-outside-init
-        self._io_output = await hub.async_open_io_output(
-            address, output, False, invert, self.__on_change
+        self._io_output = hub.create_io_output(
+            address, output, False, invert, self.__on_change, self.__on_error
         )
 
+    async def async_added_to_hass(self) -> None:
+        """Open the switch."""
+
+        await self._io_output.async_open()
+
         self._io_output.read()
-        await self._io_output.async_off()
+        await self.async_turn_off()
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Remove switch from hass and release it."""
+
+        await self.async_turn_off()
+        await self._io_output.async_release()
+
+    def __on_change(self, value: int) -> None:
+        self._attr_is_on = value != 0
+        self.schedule_update_ha_state()
+
+    def __on_error(self, error: Exception) -> None:
+        self._io_output.log_error(error)
+
+        self._attr_is_on = None
+        self.schedule_update_ha_state()
 
     @property
     def is_on(self) -> bool | None:
         """Return true if the switch is on."""
 
-        return self._on
-
-    def __on_change(self, value: int) -> None:
-        self._on = value != 0
-        self.schedule_update_ha_state()
+        return self._attr_is_on
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Instruct the switch to turn on."""
@@ -86,9 +88,3 @@ class BmhSwitch(SwitchEntity):
         """Instruct the switch to turn off."""
 
         await self._io_output.async_off()
-
-    async def async_will_remove_from_hass(self) -> None:
-        """Remove switch from hass and release it."""
-
-        await self.async_turn_off()
-        await self._io_output.async_release()

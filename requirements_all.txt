@@ -673,7 +673,7 @@ bluetooth-auto-recovery==1.5.3
 bluetooth-data-tools==1.28.4
 
 # homeassistant.components.bmh
-bmh==0.1
+bmh==1.0
 
 # homeassistant.components.bond
 bond-async==0.2.1

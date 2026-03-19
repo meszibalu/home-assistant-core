@@ -52,9 +52,9 @@ async def __async_create(
 ) -> BmhValve:
     hub = await BmhHub.async_get(hass)
 
-    entity = BmhValve(device_class)
-    await entity.async_init(
+    return BmhValve(
         hub,
+        device_class,
         output_type,
         address,
         output,
@@ -66,29 +66,14 @@ async def __async_create(
         timeout2,
     )
 
-    return entity
-
 
 class BmhValve(ValveEntity):
     """Representation of a valve."""
 
-    def __init__(self, device_class: str) -> None:
-        """Initialize a new valve.
-
-        async_init() is required to finish I/O initialization.
-        """
-
-        self._attr_should_poll = False
-
-        if device_class is not None:
-            try:
-                self._attr_device_class = ValveDeviceClass(device_class)
-            except ValueError:
-                _LOGGER.warning("Unknown device class '%s'", device_class)
-
-    async def async_init(
+    def __init__(
         self,
         hub: BmhHub,
+        device_class: str,
         output_type_str: str,
         address: int,
         output: int,
@@ -99,9 +84,16 @@ class BmhValve(ValveEntity):
         invert2: bool,
         timeout2: float,
     ) -> None:
-        """Finish initialization and open I/O."""
+        """Initialize a new valve."""
 
         self._attr_unique_id = Strings.get_unique_id(address, output)
+        self._attr_should_poll = False
+
+        if device_class is not None:
+            try:
+                self._attr_device_class = ValveDeviceClass(device_class)
+            except ValueError:
+                _LOGGER.warning("Unknown device class '%s'", device_class)
 
         output_type = TwoWayOutputType(output_type_str)
 
@@ -125,8 +117,7 @@ class BmhValve(ValveEntity):
             ValveEntityFeature.OPEN | ValveEntityFeature.CLOSE | supported_features
         )
 
-        # pylint: disable=attribute-defined-outside-init
-        self._two_way = await TwoWayOutput.async_open(
+        self._two_way = TwoWayOutput.create(
             hub,
             output_type,
             address,
@@ -140,11 +131,42 @@ class BmhValve(ValveEntity):
             self.__on_change,
         )
 
+    async def async_added_to_hass(self) -> None:
+        """Open the valve."""
+
+        await self._two_way.async_open()
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Remove valve from hass and release it."""
+
+        await self._two_way.async_release()
+
+    def __on_change(self) -> None:
+        if self.is_opening:
+            _LOGGER.info("Opening valve '%s'", self.unique_id)
+        elif self.is_closing:
+            _LOGGER.info("Closing valve '%s'", self.unique_id)
+        elif self.current_valve_position is not None:
+            _LOGGER.info(
+                "Valve '%s' is at unknown position.",
+                self.unique_id,
+            )
+        else:
+            _LOGGER.info(
+                "Valve '%s' was moved to position '%d'",
+                self.unique_id,
+                self.current_valve_position,
+            )
+
+        self.schedule_update_ha_state()
+
     @property
-    def current_valve_position(self) -> int:
+    def current_valve_position(self) -> int | None:
         """Return the current position of the valve."""
 
-        return round(self._two_way.position)
+        if self._two_way.position is None:
+            return None
+        return round(self._two_way.position * 100)
 
     @property
     def is_opening(self) -> bool | None:
@@ -157,29 +179,18 @@ class BmhValve(ValveEntity):
         return self._two_way.closing
 
     @property
-    def is_closed(self) -> bool:
+    def is_closed(self) -> bool | None:
         """Return true if the valve is closed."""
 
+        if self._two_way.position is None:
+            return None
+
         return self._two_way.position == 0
-
-    def __on_change(self) -> None:
-        if self.is_opening:
-            _LOGGER.info("Opening valve '%s'", self.unique_id)
-        elif self.is_closing:
-            _LOGGER.info("Closing valve '%s'", self.unique_id)
-        else:
-            _LOGGER.info(
-                "Valve '%s' was moved to position '%d'",
-                self.unique_id,
-                self.current_valve_position,
-            )
-
-        self.schedule_update_ha_state()
 
     async def async_open_valve(self) -> None:
         """Instruct the valve to open."""
 
-        await self._two_way.async_move(100)
+        await self._two_way.async_move(1)
 
     async def async_close_valve(self) -> None:
         """Instruct the valve to close."""
@@ -189,7 +200,7 @@ class BmhValve(ValveEntity):
     async def async_set_valve_position(self, position: int) -> None:
         """Instruct the valve to move to the given position."""
 
-        await self._two_way.async_move(position)
+        await self._two_way.async_move(position / 100)
 
     async def async_stop_valve(self) -> None:
         """Instruct the valve to stop at current position."""
@@ -197,8 +208,3 @@ class BmhValve(ValveEntity):
         _LOGGER.info("Stopping valve '%s'", self.unique_id)
 
         await self._two_way.async_stop()
-
-    async def async_will_remove_from_hass(self) -> None:
-        """Remove valve from hass and release it."""
-
-        await self._two_way.async_release()

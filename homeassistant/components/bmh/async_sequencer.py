@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable
+import contextlib
 from typing import Any
 
 
@@ -89,7 +90,10 @@ class AsyncSequencer:
 
             # Waiting for previous task.
             if self._task is not None:
-                await self._task
+                # the previous task can be successful or failed,
+                # ignoring the return value/error
+                with contextlib.suppress(Exception):
+                    await self._task
 
             task: asyncio.Task = asyncio.create_task(coro)  # type: ignore[arg-type]
 
