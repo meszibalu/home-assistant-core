@@ -1,0 +1,124 @@
+{
+  "config": {
+    "step": {
+      "binary_sensor": {
+        "data": {
+          "address": "Address",
+          "device_class": "Device class",
+          "input": "Input pin number",
+          "invert": "Invert"
+        },
+        "title": "BMH - Binary sensor"
+      },
+      "cover": {
+        "data": {
+          "device_class": "Device class",
+          "output_type": "Output type"
+        },
+        "title": "BMH - Cover"
+      },
+      "cover_output1": {
+        "data": {
+          "address": "Address",
+          "invert": "Invert",
+          "output": "Output pin number",
+          "timeout": "Opening time",
+          "timeout2": "Closing time"
+        },
+        "title": "BMH - Cover"
+      },
+      "cover_output2": {
+        "data": {
+          "address": "Opening address",
+          "address2": "Closing address",
+          "invert": "Opening invert",
+          "invert2": "Closing invert",
+          "output": "Opening output pin number",
+          "output2": "Closing output pin number",
+          "timeout": "Opening time",
+          "timeout2": "Closing time"
+        },
+        "title": "BMH - Cover"
+      },
+      "event": {
+        "data": {
+          "address": "Address",
+          "device_class": "Device class",
+          "input": "Input pin number",
+          "invert": "Invert"
+        },
+        "title": "BMH - Event"
+      },
+      "light": {
+        "data": {
+          "address": "Address",
+          "invert": "Invert",
+          "output": "Output pin number",
+          "pwm": "PWM"
+        },
+        "title": "BMH - Light"
+      },
+      "sensor": {
+        "data": {
+          "address": "Address",
+          "port": "1W port number"
+        },
+        "title": "BMH - Sensor"
+      },
+      "siren": {
+        "data": {
+          "address": "Address",
+          "invert": "Invert",
+          "output": "Output pin number",
+          "pwm": "Volume PWM"
+        },
+        "title": "BMH - Siren"
+      },
+      "switch": {
+        "data": {
+          "address": "Address",
+          "invert": "Invert",
+          "output": "Output pin number"
+        },
+        "title": "BMH - Switch"
+      },
+      "user": {
+        "data": {
+          "name": "Name",
+          "platform": "Platform"
+        },
+        "title": "BMH - Platform"
+      },
+      "valve": {
+        "data": {
+          "device_class": "Device class",
+          "output_type": "Output type"
+        },
+        "title": "BMH - Valve"
+      },
+      "valve_output1": {
+        "data": {
+          "address": "Address",
+          "invert": "Invert",
+          "output": "Output pin number",
+          "timeout": "Opening time",
+          "timeout2": "Closing time"
+        },
+        "title": "BMH - Valve"
+      },
+      "valve_output2": {
+        "data": {
+          "address": "Opening address",
+          "address2": "Closing address",
+          "invert": "Opening invert",
+          "invert2": "Closing invert",
+          "output": "Opening output pin number",
+          "output2": "Closing output pin number",
+          "timeout": "Opening time",
+          "timeout2": "Closing time"
+        },
+        "title": "BMH - Valve"
+      }
+    }
+  }
+}

@@ -1,6 +1,7 @@
 {
   "domain": "bmh",
   "name": "Bali M\u0171vek Home Controller",
+  "version": "1.0",
   "codeowners": ["@meszibalu"],
   "config_flow": true,
   "dependencies": [],
