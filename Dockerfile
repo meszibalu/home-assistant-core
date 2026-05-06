@@ -39,6 +39,15 @@ RUN \
         --no-build \
         -r homeassistant/requirements.txt
 
+COPY requirements_all.txt home_assistant_frontend-* home_assistant_intents-* homeassistant/
+RUN \
+    if ls homeassistant/home_assistant_*.whl 1> /dev/null 2>&1; then \
+        uv pip install homeassistant/home_assistant_*.whl; \
+    fi \
+    && uv pip install \
+        --no-build \
+        -r homeassistant/requirements_all.txt
+
 COPY bmh/liblgpio.so.1 /usr/lib
 COPY bmh/*.whl /tmp/wheels/
 
@@ -49,14 +58,7 @@ RUN \
       /tmp/wheels/bmh-*.whl && \
     rm -rf /tmp/wheels
 
-COPY requirements_all.txt home_assistant_frontend-* home_assistant_intents-* homeassistant/
-RUN \
-    if ls homeassistant/home_assistant_*.whl 1> /dev/null 2>&1; then \
-        uv pip install homeassistant/home_assistant_*.whl; \
-    fi \
-    && uv pip install \
-        --no-build \
-        -r homeassistant/requirements_all.txt
+COPY --parents custom_components/ homeassistant/
 
 ## Setup Home Assistant Core
 COPY --parents LICENSE* README* homeassistant/ pyproject.toml homeassistant/
