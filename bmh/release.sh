@@ -12,6 +12,16 @@ VERSION=$(git tag -l | egrep "^[0-9]{4}\.[0-9]+\.[0-9]+$" | sort -V | tail -1)
 echo "Latest version: $VERSION"
 read -p "Press ENTER to continue"
 
+ARCH=$(uname -m)
+
+echo "Running on arch: $ARCH"
+
+if [ "$ARCH" != "aarch64" ]; then
+	echo "Adding binfmt..."
+	docker run --privileged --rm tonistiigi/binfmt --install arm64
+fi
+
+
 docker build --platform=linux/arm64 \
   -t ghcr.io/meszibalu/raspberrypi4-64-homeassistant:$VERSION \
   -t ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable \
