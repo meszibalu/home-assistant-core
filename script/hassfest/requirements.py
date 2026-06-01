@@ -281,14 +281,10 @@ FORBIDDEN_PACKAGE_FILES_EXCEPTIONS = {
     },
     # https://github.com/basnijholt/aiokef
     "kef": {"homeassistant": {"aiokef"}},
-    # https://github.com/danifus/pyzipper
-    "knx": {"xknxproject": {"pyzipper"}},
     # https://github.com/hthiery/python-lacrosse
     "lacrosse": {"homeassistant": {"pylacrosse"}},
     # ???
     "linode": {"homeassistant": {"linode-api"}},
-    # https://github.com/timmo001/aiolyric
-    "lyric": {"homeassistant": {"aiolyric"}},
     # https://github.com/microBeesTech/pythonSDK/
     "microbees": {
         "homeassistant": {"microbeespy"},
