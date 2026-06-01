@@ -26,8 +26,8 @@ fi
 docker build --platform=linux/arm64 \
   -t ghcr.io/meszibalu/raspberrypi4-64-homeassistant:$VERSION \
   -t ghcr.io/meszibalu/raspberrypi4-64-homeassistant:stable \
-  --build-arg BUILD_FROM=ghcr.io/home-assistant/aarch64-homeassistant:$VERSION \
-  --build-arg BUILD_ARCH=aarch64 \
+  --build-arg=VERSION=$VERSION \
+  -f Dockerfile.bmh \
   .
 
 echo "Pushing image and tagging git"

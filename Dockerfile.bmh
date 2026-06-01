@@ -1,0 +1,24 @@
+ARG VERSION=stable
+FROM ghcr.io/home-assistant/raspberrypi4-64-homeassistant:${VERSION}
+
+COPY bmh/liblgpio.so.1 /usr/lib
+COPY bmh/*.whl /tmp/wheels/
+
+WORKDIR /usr/src
+
+RUN \
+    uv pip install --no-build \
+      /tmp/wheels/lgpio-*.whl \
+      /tmp/wheels/rpi_lgpio-*.whl \
+      /tmp/wheels/bmh-*.whl && \
+    rm -rf /tmp/wheels
+
+COPY --parents custom_components/ homeassistant/
+
+RUN python3 -m compileall \
+    homeassistant/custom_components
+
+## Add custom_components to module path
+RUN echo /usr/src/homeassistant > /usr/local/lib/python3.14/site-packages/hass.pth
+
+WORKDIR /config

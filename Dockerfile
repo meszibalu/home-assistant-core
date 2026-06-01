@@ -48,28 +48,12 @@ RUN \
         --no-build \
         -r homeassistant/requirements_all.txt
 
-COPY bmh/liblgpio.so.1 /usr/lib
-COPY bmh/*.whl /tmp/wheels/
-
-RUN \
-    uv pip install --no-build \
-      /tmp/wheels/lgpio-*.whl \
-      /tmp/wheels/rpi_lgpio-*.whl \
-      /tmp/wheels/bmh-*.whl && \
-    rm -rf /tmp/wheels
-
-COPY --parents custom_components/ homeassistant/
-
 ## Setup Home Assistant Core
 COPY --parents LICENSE* README* homeassistant/ pyproject.toml homeassistant/
 RUN \
     uv pip install \
         -e ./homeassistant \
     && python3 -m compileall \
-        homeassistant/homeassistant \
-        homeassistant/custom_components
-
-## Add custom_components to module path
-RUN echo /usr/src/homeassistant > /usr/local/lib/python3.14/site-packages/hass.pth
+        homeassistant/homeassistant
 
 WORKDIR /config
