@@ -10,7 +10,7 @@ from aiohttp.web_exceptions import HTTPUnauthorized
 import voluptuous as vol
 
 from homeassistant.auth.const import GROUP_ID_ADMIN
-from homeassistant.auth.providers.homeassistant import HassAuthProvider
+from homeassistant.auth.providers.homeassistant import HassAuthProvider, InvalidUsername
 from homeassistant.components import person
 from homeassistant.components.auth import indieauth
 from homeassistant.components.http import KEY_HASS, KEY_HASS_REFRESH_TOKEN_ID
@@ -125,6 +125,18 @@ class InstallationTypeOnboardingView(NoAuthBaseOnboardingView):
             raise HTTPUnauthorized
 
         hass = request.app[KEY_HASS]
+        # Wait for hassio so Supervisor installations are detected correctly.
+        # Shield a hass-owned task so disconnects cannot cancel its setup future.
+        await asyncio.shield(
+            hass.async_create_task(
+                async_wait_component(hass, "hassio"), "onboarding wait hassio"
+            )
+        )
+
+        # Onboarding may have completed while waiting
+        if self._data["done"]:
+            raise HTTPUnauthorized
+
         info = await async_get_system_info(hass)
         return self.json({"installation_type": info["installation_type"]})
 
@@ -187,10 +199,18 @@ class UserOnboardingView(_BaseOnboardingStepView):
             provider = _async_get_hass_provider(hass)
             await provider.async_initialize()
 
+            # Add the auth before creating the user, as it validates the
+            # username, to avoid leaving an orphaned user behind on failure.
+            try:
+                await provider.async_add_auth(data["username"], data["password"])
+            except InvalidUsername as err:
+                return self.json_message(
+                    str(err), HTTPStatus.BAD_REQUEST, err.translation_key
+                )
+
             user = await hass.auth.async_create_user(
                 data["name"], group_ids=[GROUP_ID_ADMIN]
             )
-            await provider.async_add_auth(data["username"], data["password"])
             credentials = await provider.async_get_or_create_credentials(
                 {"username": data["username"]}
             )

@@ -126,7 +126,6 @@ class ThermostatEntity(ClimateEntity):
     @override
     async def async_added_to_hass(self) -> None:
         """Run when entity is added to register update signal handler."""
-        self._attr_supported_features = self._get_supported_features()
         self.async_on_remove(
             self._device.add_update_listener(self.async_write_ha_state)
         )
@@ -264,6 +263,12 @@ class ThermostatEntity(ClimateEntity):
             return FAN_INV_MODES
         return []
 
+    @property
+    @override
+    def supported_features(self) -> ClimateEntityFeature:
+        """Return the bitmap of supported features, computed from current traits."""
+        return self._get_supported_features()
+
     def _get_supported_features(self) -> ClimateEntityFeature:
         """Compute the bitmap of supported features from the current state."""
         features = ClimateEntityFeature.TURN_OFF | ClimateEntityFeature.TURN_ON
@@ -291,6 +296,13 @@ class ThermostatEntity(ClimateEntity):
             raise HomeAssistantError(
                 f"Error setting {self.entity_id} HVAC mode to {hvac_mode}: {err}"
             ) from err
+
+    @override
+    async def async_turn_on(self) -> None:
+        """Turn the entity on."""
+        if self.hvac_mode != HVACMode.OFF:
+            return
+        await super().async_turn_on()
 
     @override
     async def async_set_temperature(self, **kwargs: Any) -> None:
