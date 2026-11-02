@@ -3,7 +3,7 @@
 import asyncio
 from typing import Any, override
 
-import voluptuous as vol
+import probatio
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.core import HomeAssistant
@@ -21,7 +21,7 @@ from .entity import YardianZoneEntity
 
 SERVICE_START_IRRIGATION = "start_irrigation"
 SERVICE_SCHEMA_START_IRRIGATION: VolDictType = {
-    vol.Required("duration"): cv.positive_int,
+    probatio.Required("duration"): cv.positive_int,
 }
 
 
@@ -68,7 +68,9 @@ class YardianSwitch(YardianZoneEntity, SwitchEntity):
     @override
     def available(self) -> bool:
         """Return the switch is available or not."""
-        return self.coordinator.data.zones[self._zone_id].is_enabled
+        return (
+            super().available and self.coordinator.data.zones[self._zone_id].is_enabled
+        )
 
     @override
     async def async_turn_on(self, **kwargs: Any) -> None:
